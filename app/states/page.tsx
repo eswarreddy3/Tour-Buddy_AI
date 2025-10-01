@@ -7,7 +7,7 @@ import { StateCard } from "@/components/state-card"
 import { SearchBar } from "@/components/search-bar"
 
 export default function AllStatesPage() {
-  const { data, isLoading, error } = useSWR("/states", fetcher)
+  const { data, isLoading, error } = useSWR("/api/states", fetcher)
   const params = useSearchParams()
   const q = (params.get("q") || "").toLowerCase()
 
