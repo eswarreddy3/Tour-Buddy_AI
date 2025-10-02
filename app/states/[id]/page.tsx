@@ -11,8 +11,14 @@ const CATEGORIES = ["Adventure", "Culture", "Historical", "Nature", "Heritage", 
 
 export default function StatePage() {
   const { id } = useParams<{ id: string }>()
-  const { data: state, isLoading: loadingState } = useSWR(id ? `/api/states/${id}` : null, fetcher)
-  const { data: places, isLoading: loadingPlaces } = useSWR(id ? `/api/states/${id}/places` : null, fetcher)
+  const { data: state, error: stateError, isLoading: loadingState } = useSWR(
+    id ? `/api/states/${id}` : null,
+    fetcher
+  )
+  const { data: places, isLoading: loadingPlaces } = useSWR(
+    id ? `/api/states/${id}/places` : null,
+    fetcher
+  )
   const params = useSearchParams()
   const router = useRouter()
   const active = params.get("category") || ""
@@ -33,13 +39,24 @@ export default function StatePage() {
     <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
       {loadingState ? (
         <div className="h-40 rounded-lg bg-muted animate-pulse" aria-busy />
-      ) : state ? (
-        <header className="space-y-2">
-          <h1 className="text-2xl font-semibold">{state.name}</h1>
-          <p className="text-sm text-muted-foreground">Capital: {state.capital ?? "—"}</p>
-        </header>
+      ) : stateError ? (
+        <p className="text-sm text-red-500">Failed to load state</p>
+      ) : !state ? (
+        <p className="text-sm text-muted-foreground">State not found</p>
       ) : (
-        <p className="text-sm text-muted-foreground"></p>
+        <header className="space-y-2">
+          <div className="relative w-full">
+            <img
+              src={state.image || "/placeholder.svg?height=320&width=1200&query=place%20hero"}
+              alt={state.name}
+              className="h-[320px] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/30" aria-hidden />
+            <div className="absolute bottom-4 left-4 text-white">
+              <h1 className="text-3xl font-bold">{state.name}</h1>
+            </div>
+          </div>
+        </header>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -55,10 +72,8 @@ export default function StatePage() {
 
       {loadingPlaces && <p className="text-sm text-muted-foreground">Loading places...</p>}
 
-      {/* empty state: show a big "Coming soon" with icon */}
       {!loadingPlaces && Array.isArray(filtered) && filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
-          {/* Simple location / map pin icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-20 w-20 text-muted-foreground"
